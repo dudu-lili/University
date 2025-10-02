@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.redtourism.mapper.ScenicSpotMapper">
+    <select id="selectAll" resultType="ScenicSpot">
+        SELECT * FROM scenic_spot
+    </select>
+
+    <select id="selectById" resultType="ScenicSpot">
+        SELECT * FROM scenic_spot WHERE id = #{id}
+    </select>
+
+<!--    <insert id="insert" parameterType="ScenicSpot" useGeneratedKeys="true" keyProperty="id">-->
+<!--        &lt;!&ndash;等级、省份、城市、开放时间、门票信息、关键词&ndash;&gt;-->
+<!--        INSERT INTO scenic_spot (name, cover_image, description, address, like_count,level,province,city,openningHours,ticketInfo,keywords)-->
+<!--        VALUES (#{name}, #{coverImage}, #{description}, #{address}, #{likeCount},#{level},#{province},#{city},#{openningHours},#{ticketInfo},#{keywords})-->
+<!--        &lt;!&ndash;等级、省份、城市、开放时间、门票信息、关键词&ndash;&gt;-->
+<!--    </insert>-->
+    <insert id="insert" parameterType="ScenicSpot" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO scenic_spot
+        (name, cover_image, description, address, like_count, level, province, city,
+         openningHours, ticketInfo, keywords, latitude, longitude)
+        VALUES
+            (#{name}, #{coverImage}, #{description}, #{address}, #{likeCount},
+             #{level}, #{province}, #{city}, #{openningHours}, #{ticketInfo}, #{keywords},
+             #{latitude}, #{longitude})
+    </insert>
+
+    <select id="selectByRouteId" resultType="ScenicSpot">
+        SELECT ss.* FROM scenic_spot ss
+                             JOIN route_scenic rs ON ss.id = rs.scenic_id
+        WHERE rs.route_id = #{routeId}
+        ORDER BY rs.sort_order ASC
+    </select>
+
+    <update id="update" parameterType="ScenicSpot">
+        UPDATE scenic_spot SET
+                               name = #{name},
+                               cover_image = #{coverImage},
+                               description = #{description},
+                               address = #{address},
+                               level = #{level},
+                               province = #{province},
+                               city = #{city},
+                               openningHours = #{openningHours},
+                               ticketInfo = #{ticketInfo},
+                               keywords = #{keywords},
+                               latitude = #{latitude},
+                               longitude = #{longitude}
+        WHERE id = #{id}
+    </update>
+    <delete id="delete">
+        DELETE FROM scenic_spot WHERE id = #{id}
+    </delete>
+
+    <update id="increaseLikeCount">
+        UPDATE scenic_spot SET like_count = like_count + 1 WHERE id = #{id}
+    </update>
+
+    <select id="listTopScenics" resultType="ScenicSpot">
+        SELECT * FROM scenic_spot ORDER BY like_count DESC LIMIT #{limit}
+    </select>
+    <select id="listFavoritesByUserId" resultType="ScenicSpot">
+        SELECT ss.* FROM scenic_spot ss
+                             JOIN favorite f ON ss.id = f.scenic_id
+        WHERE f.user_id = #{userId}
+    </select>
+    <!-- 按等级排序 -->
+    <select id="findAllOrderByLevel" resultType="ScenicSpot">
+        SELECT * FROM scenic_spot
+        ORDER BY
+            CASE
+                WHEN level LIKE '%AAAAA%' THEN 1
+                WHEN level LIKE '%AAAA%' THEN 2
+                WHEN level LIKE '%AAA%' THEN 3
+                WHEN level LIKE '%AA%' THEN 4
+                WHEN level LIKE '%A%' THEN 5
+                WHEN level = '等级未提供' THEN 6
+                ELSE 7
+                END ${order},
+        level ${order}
+    </select>
+
+    <!-- 按点赞数排序（由多到少） -->
+    <select id="findAllOrderByLikes" resultType="ScenicSpot">
+        SELECT * FROM scenic_spot
+        ORDER BY like_count DESC
+    </select>
+
+    <!-- 按收藏数排序（由多到少） -->
+<!--    <select id="findAllOrderByFavorites" resultType="ScenicSpot">-->
+<!--        SELECT * FROM scenic_spot-->
+<!--        ORDER BY favorite_count DESC-->
+<!--    </select>-->
+
+    <!-- 附近景点查询（距离由近到小） -->
+    <select id="findNearby" resultType="ScenicSpot">
+    SELECT *,
+    (6371 * acos(cos(radians(#{latitude})) * cos(radians(latitude)) *
+    cos(radians(longitude) - radians(#{longitude})) +
+    sin(radians(#{latitude})) * sin(radians(latitude)))) AS distance
+    FROM scenic_spot
+    WHERE (6371 * acos(cos(radians(#{latitude})) * cos(radians(latitude)) *
+    cos(radians(longitude) - radians(#{longitude})) +
+    sin(radians(#{latitude})) * sin(radians(latitude)))) &lt;= #{radius}/1000
+    ORDER BY distance ASC
+    </select>
+    <select id="checkIfFavorited" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM favorite
+        WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </select>
+    <update id="decreaseLikeCount">
+        UPDATE scenic_spot
+        SET like_count = CASE
+                             WHEN like_count > 0 THEN like_count - 1
+                             ELSE 0
+            END
+        WHERE id = #{id}
+    </update>
+    <delete id="batchDelete">
+        DELETE FROM scenic_spot WHERE id IN
+        <foreach collection="scenicIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="searchScenics" parameterType="string" resultType="com.redtourism.entity.ScenicSpot">
+        SELECT *
+        FROM scenic_spot
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR address LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+           OR keywords LIKE CONCAT('%', #{keyword}, '%')
+           OR level LIKE CONCAT('%', #{keyword}, '%')
+           OR province LIKE CONCAT('%', #{keyword}, '%')
+           OR city LIKE CONCAT('%', #{keyword}, '%')
+           OR openningHours LIKE CONCAT('%', #{keyword}, '%')
+           OR ticketInfo LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+
+</mapper>

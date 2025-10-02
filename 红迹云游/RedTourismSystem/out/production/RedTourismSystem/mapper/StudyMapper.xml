@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.redtourism.mapper.StudyMapper">
+    <select id="selectAll" resultType="Study">
+        SELECT * FROM study
+    </select>
+
+    <select id="selectById" resultType="Study">
+        SELECT * FROM study WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.redtourism.entity.Study" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO study(title, author, content, view_count, source, time, coverImage)
+        VALUES (#{title}, #{author}, #{content}, #{viewCount}, #{source}, #{time}, #{coverImage})
+    </insert>
+
+    <select id="selectByRouteId" resultType="Study">
+        SELECT ss.* FROM study ss
+              JOIN study rs ON ss.id = rs.study
+        WHERE rs.route_id = #{routeId}
+        ORDER BY rs.sort_order ASC
+    </select>
+
+
+    <update id="update" parameterType="com.redtourism.entity.Study">
+        UPDATE study
+        SET title = #{title},
+            author = #{author},
+            content = #{content},
+            source = #{source},
+            time = #{time},
+            coverImage = #{coverImage}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM study WHERE id = #{id}
+    </delete>
+
+    <update id="increaseViewCount">
+        UPDATE study SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+    <select id="listTopStudy" resultType="Study">
+        SELECT * FROM study ORDER BY view_count DESC LIMIT #{limit}
+    </select>
+
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.redtourism.mapper.FavoriteMapper">
+    <insert id="insert" parameterType="Favorite" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO favorite (user_id, scenic_id, route_id, travelnotes_id, create_time)
+        VALUES (#{userId}, #{scenicId}, #{routeId}, #{travelNotesId}, #{createTime})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM favorite WHERE id = #{id}
+    </delete>
+
+    <select id="selectByUserAndScenic" resultType="Favorite">
+        SELECT * FROM favorite
+        WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </select>
+
+    <select id="selectByUserAndRoute" resultType="Favorite">
+        SELECT * FROM favorite
+        WHERE user_id = #{userId} AND route_id = #{routeId}
+    </select>
+
+    <select id="selectByUserAndTravelNotes" resultType="Favorite">
+        SELECT * FROM favorite
+        WHERE user_id = #{userId} AND travelnotes_id = #{travelNotesId}
+    </select>
+
+    <select id="selectByUserId" resultType="Favorite">
+        SELECT * FROM favorite WHERE user_id = #{userId}
+    </select>
+    <!-- 取消收藏景点的SQL -->
+    <delete id="unfavoriteScenic">
+        DELETE FROM favorite
+        WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </delete>
+
+    <!-- 取消收藏路线的SQL -->
+    <delete id="unfavoriteRoute">
+        DELETE FROM favorite
+        WHERE user_id = #{userId} AND route_id = #{routeId}
+    </delete>
+    <delete id="unfavoriteTravelNotes">
+        DELETE FROM favorite
+        WHERE user_id = #{userId} AND travelnotes_id = #{travelNotesId}
+    </delete>
+    <delete id="deleteByScenicId">
+        DELETE FROM favorite WHERE scenic_id = #{scenicId}
+    </delete>
+    <delete id="deleteByRouteId">
+        DELETE FROM favorite WHERE route_id = #{routeId}
+    </delete>
+    <delete id="deleteByTravelNotesId">
+        DELETE FROM favorite WHERE travelnotes_id = #{travelNotesId}
+    </delete>
+    <delete id="deleteByScenicIds">
+        DELETE FROM favorite WHERE scenic_id IN
+        <foreach collection="scenicIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByRouteIds">
+        DELETE FROM favorite WHERE route_id IN
+        <foreach collection="routeIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByTravelNotesIds">
+        DELETE FROM favorite WHERE travelnotes_id IN
+        <foreach collection="travelNotesIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
