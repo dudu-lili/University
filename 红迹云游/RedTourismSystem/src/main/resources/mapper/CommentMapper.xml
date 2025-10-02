@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.redtourism.mapper.CommentMapper">
+    <resultMap id="commentResultMap" type="Comment">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <association property="user" column="user_id" select="com.redtourism.mapper.UserMapper.selectById"/>
+    </resultMap>
+
+    <select id="selectByScenicId" resultMap="commentResultMap">
+        SELECT * FROM comment WHERE scenic_id = #{scenicId}
+    </select>
+
+    <select id="selectByRouteId" resultMap="commentResultMap">
+        SELECT * FROM comment WHERE route_id = #{routeId}
+    </select>
+
+    <select id="selectByStudyId" resultMap="commentResultMap">
+        SELECT * FROM comment WHERE study_id = #{studyId}
+    </select>
+
+    <select id="selectByTravelNotesId" resultMap="commentResultMap">
+        SELECT * FROM comment WHERE travelnotes_id = #{travelNotesId}
+    </select>
+
+<!--    <insert id="insert" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">-->
+<!--        INSERT INTO comment (user_id, scenic_id, route_id, content, create_time)-->
+<!--        VALUES (#{userId}, #{scenicId}, #{routeId}, #{content}, #{createTime})-->
+<!--    </insert>-->
+    <!--修改，研学评论问题-->
+    <insert id="insert" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment (user_id, scenic_id, route_id, study_id, travelnotes_id, content, create_time)
+        VALUES (#{userId}, #{scenicId}, #{routeId},#{studyId}, #{travelNotesId}, #{content}, #{createTime})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+
+    <select id="selectAll" resultMap="commentResultMap">
+        SELECT * FROM comment
+    </select>
+
+    <select id="selectById" resultMap="commentResultMap">
+        SELECT * FROM comment WHERE id = #{id}
+    </select>
+    <!-- SQL映射 -->
+    <select id="listByUserId" resultType="Comment">
+        SELECT * FROM comment WHERE user_id = #{userId}
+    </select>
+    <select id="getCommentsByScenicId" resultType="com.redtourism.entity.Comment">
+        SELECT * FROM comment WHERE scenic_id = #{scenicId}
+    </select>
+    <select id="getCommentsByStudyId" resultType="com.redtourism.entity.Comment">
+        SELECT * FROM comment WHERE study_id = #{studyId}
+    </select>
+    <select id="getCommentsByTravelNotesId" resultType="com.redtourism.entity.Comment">
+        SELECT * FROM comment WHERE travelnotes_id = #{travelNotesId}
+    </select>
+    <!-- SQL映射 -->
+    <select id="getAllComments" resultMap="commentResultMap">
+        SELECT
+            c.id,
+            c.user_id,
+            c.scenic_id,
+            c.route_id,
+            c.study_id,
+            c.travelnotes_id,
+            c.content,
+            c.create_time
+        FROM
+            comment c
+        ORDER BY
+            c.create_time DESC
+    </select>
+    <delete id="batchDelete">
+        DELETE FROM comment WHERE id IN
+        <foreach collection="commentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getUserIdByTravelNotesId" resultType="int">
+        SELECT user_id FROM comment WHERE travelnotes_id = #{travelNotesId}
+        LIMIT 1
+    </select>
+
+</mapper>

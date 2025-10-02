@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.redtourism.mapper.LikeMapper">
+
+    <!-- 检查用户是否点赞过路线 -->
+    <select id="checkIfUserLikedRoute" resultType="int">
+        SELECT COUNT(1)  FROM `like` WHERE user_id = #{userId} AND route_id = #{routeId}
+    </select>
+
+    <!-- 记录用户点赞路线 -->
+    <insert id="insertUserLikeRoute">
+        INSERT INTO `like` (user_id, route_id) VALUES (#{userId}, #{routeId})
+    </insert>
+
+    <!-- 取消用户点赞路线 -->
+    <delete id="deleteUserLikeRoute">
+        DELETE FROM `like` WHERE user_id = #{userId} AND route_id = #{routeId}
+    </delete>
+
+    <!-- 检查用户是否点赞过景点 -->
+    <select id="checkIfUserLikedScenic" resultType="int">
+        SELECT COUNT(1)  FROM `like` WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </select>
+
+    <!-- 记录用户点赞景点 -->
+    <insert id="insertUserLikeScenic">
+        INSERT INTO `like` (user_id, scenic_id) VALUES (#{userId}, #{scenicId})
+    </insert>
+
+    <!-- 取消用户点赞景点 -->
+    <delete id="deleteUserLikeScenic">
+        DELETE FROM `like` WHERE user_id = #{userId} AND scenic_id = #{scenicId}
+    </delete>
+
+</mapper>

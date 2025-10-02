@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- StatisticsMapper.xml -->
+<mapper namespace="com.redtourism.mapper.StatisticsMapper">
+    <!-- 用户统计 -->
+    <select id="selectTotalUsers" resultType="int">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <select id="selectTodayNewUsers" resultType="int">
+        SELECT COUNT(*) FROM user
+        WHERE DATE(create_time) = CURDATE()
+    </select>
+
+    <!-- 收藏前三景点 -->
+    <select id="selectTop3FavoritedScenics" resultType="map">
+        SELECT s.id, s.name, COUNT(f.id) AS favorite_count
+        FROM scenic_spot s
+        LEFT JOIN favorite f ON s.id = f.scenic_id
+        GROUP BY s.id
+        ORDER BY favorite_count DESC
+        LIMIT 3
+    </select>
+
+    <!-- 评论前十景点 -->
+    <select id="selectTop10CommentedScenics" resultType="map">
+        SELECT s.id, s.name, COUNT(c.id) AS comment_count
+        FROM scenic_spot s
+        LEFT JOIN comment c ON s.id = c.scenic_id
+        GROUP BY s.id
+        ORDER BY comment_count DESC
+        LIMIT 10
+    </select>
+
+    <!-- 最多景点省份（直接使用province字段） -->
+    <select id="selectProvinceWithMostScenics" resultType="map">
+    SELECT
+        province,
+        COUNT(*) AS scenic_count
+    FROM scenic_spot
+    GROUP BY province
+    ORDER BY scenic_count DESC
+    LIMIT 1
+</select>
+
+    <!-- 地图坐标数据 -->
+    <select id="selectAllScenicCoordinates" resultType="map">
+        SELECT name, address
+        FROM scenic_spot
+    </select>
+</mapper>
