@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型信息 - 信用风险分析与预测系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        danger: '#F53F3F',
+                        warning: '#FF7D00',
+                        success: '#00B42A',
+                        dark: '#1D2129',
+                        'gray-light': '#F2F3F5',
+                        'gray-medium': '#86909C'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-light text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex-shrink-0 flex items-center">
+                        <i class="fa fa-line-chart text-primary text-2xl mr-2"></i>
+                        <span class="text-xl font-semibold">信用风险分析与预测系统</span>
+                    </a>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/" class="border-transparent text-gray-medium hover:text-dark hover:border-gray-300 px-1 pt-1 inline-flex items-center text-sm font-medium">
+                            <i class="fa fa-home mr-1"></i> 首页
+                        </a>
+                        <a href="/model" class="border-primary text-dark border-b-2 px-1 pt-1 inline-flex items-center text-sm font-medium">
+                            <i class="fa fa-cogs mr-1"></i> 模型信息
+                        </a>
+                        <a href="/visualizations" class="border-transparent text-gray-medium hover:text-dark hover:border-gray-300 px-1 pt-1 inline-flex items-center text-sm font-medium">
+                            <i class="fa fa-bar-chart mr-1"></i> 数据可视化
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-2">模型信息</h1>
+                <p class="text-gray-medium">了解我们的信用风险预测模型的技术细节和性能表现</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 左侧面板 -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- 模型概述 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-info-circle text-primary mr-2"></i> 模型概述
+                        </h2>
+                        <div class="space-y-4">
+                            <p class="text-gray-medium">
+                                本系统使用随机森林算法构建信用风险预测模型。随机森林是一种集成学习方法，它通过组合多个决策树来提高预测准确性和稳定性。
+                            </p>
+                            <p class="text-gray-medium">
+                                模型基于12个信用相关特征，对客户未来两年内发生严重逾期(90天以上)的可能性进行预测。这些特征包括无担保信用额度使用率、年龄、逾期次数、负债比率等。
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                <div class="bg-gray-light rounded-lg p-4">
+                                    <h3 class="text-sm font-medium text-gray-700 mb-2">训练样本数</h3>
+                                    <p class="text-2xl font-semibold" id="training-samples">150,000</p>
+                                </div>
+                                <div class="bg-gray-light rounded-lg p-4">
+                                    <h3 class="text-sm font-medium text-gray-700 mb-2">特征数量</h3>
+                                    <p class="text-2xl font-semibold">12</p>
+                                </div>
+                                <div class="bg-gray-light rounded-lg p-4">
+                                    <h3 class="text-sm font-medium text-gray-700 mb-2">模型训练时间</h3>
+                                    <p class="text-2xl font-semibold" id="training-time">2.8s</p>
+                                </div>
+                                <div class="bg-gray-light rounded-lg p-4">
+                                    <h3 class="text-sm font-medium text-gray-700 mb-2">决策树数量</h3>
+                                    <p class="text-2xl font-semibold">100</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 模型性能 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-bar-chart text-primary mr-2"></i> 模型性能
+                        </h2>
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-lg font-medium mb-4">混淆矩阵</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-gray-light rounded-lg p-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-1">准确率</h4>
+                                        <p class="text-2xl font-semibold" id="accuracy">94%</p>
+                                    </div>
+                                    <div class="bg-gray-light rounded-lg p-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-1">精确率</h4>
+                                        <p class="text-2xl font-semibold" id="precision"> 92%</p>
+                                    </div>
+                                    <div class="bg-gray-light rounded-lg p-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-1">召回率</h4>
+                                        <p class="text-2xl font-semibold" id="recall"> 94%</p>
+                                    </div>
+                                    <div class="bg-gray-light rounded-lg p-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-1">F1分数</h4>
+                                        <p class="text-2xl font-semibold" id="f1-score"> 92%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="bg-gray-50 rounded-lg p-4 overflow-x-auto">
+                                    <pre id="classification-report" class="text-sm font-mono text-gray-700 whitespace-pre-wrap"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 特征重要性 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-tasks text-primary mr-2"></i> 特征重要性
+                        </h2>
+                        <div>
+                            <p class="text-gray-medium mb-6">
+                                特征重要性分数表示各个特征对模型预测的贡献程度。分数越高，说明该特征对预测结果的影响越大。</br>
+                                数据层面</br>
+                                数据质量评估：重要性低的特征可能存在数据质量问题，如噪声大、数据缺失严重或与其他特征高度相关。这有助于识别需要清理或补充的数据，优化数据集。</br>
+                                特征筛选依据：在处理高维数据时，可根据特征重要性选择最重要的特征，减少数据维度，降低模型复杂度，提高训练效率。</br>
+                                业务层面</br>
+                                业务决策支持：明确哪些因素对业务目标影响最大，为业务决策提供有力依据。如在信用风险评估中，重点关注重要性高的特征，制定更精准的风险控制策略。</br>
+                                潜在价值挖掘：发现业务中未被充分重视但对结果影响较大的因素，挖掘潜在的业务价值，开辟新的业务增长点。</br>
+                                模型层面</br>
+                                模型优化方向：了解特征重要性后，可以针对重要特征进行特征工程，如创建新特征或转换特征，提升模型性能。</br>
+                                模型解释性增强：使模型的预测结果更具可解释性，增强用户对模型的信任度。</br>
+                            </p>
+                            <div class="h-80">
+                                <canvas id="feature-importance-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧面板 -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- 模型选择依据 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-check-circle text-primary mr-2"></i> 模型选择依据
+                        </h2>
+                        <div class="space-y-4">
+                            <p class="text-gray-medium">
+                                我们选择随机森林算法构建信用风险预测模型的主要原因：
+                            </p>
+                            <ul class="space-y-2 text-gray-medium">
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                                    <span>对高维数据和非线性关系有良好的处理能力</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                                    <span>能够评估特征重要性，帮助理解哪些因素对信用风险影响最大</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                                    <span>不易过拟合，泛化能力强</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                                    <span>对缺失值和异常值有较强的鲁棒性</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                                    <span>计算效率高，适合大规模数据集</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 评估指标解释 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-question-circle text-primary mr-2"></i> 评估指标解释
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700 mb-1">准确率 (Accuracy)</h3>
+                                <p class="text-gray-medium text-sm">
+                                    模型正确预测的样本数占总样本数的比例。
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700 mb-1">精确率 (Precision)</h3>
+                                <p class="text-gray-medium text-sm">
+                                    模型预测为正类的样本中，实际为正类的比例。
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700 mb-1">召回率 (Recall)</h3>
+                                <p class="text-gray-medium text-sm">
+                                    实际为正类的样本中，被模型正确预测为正类的比例。
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-700 mb-1">F1分数 (F1-Score)</h3>
+                                <p class="text-gray-medium text-sm">
+                                    精确率和召回率的调和平均数，用于平衡两个指标。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 模型优化建议 -->
+                    <div class="bg-white rounded-xl p-6 card-shadow">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fa fa-cog text-primary mr-2"></i> 模型优化建议
+                        </h2>
+                        <div class="space-y-4">
+                            <p class="text-gray-medium">
+                                基于当前模型表现，可以考虑以下优化方向：
+                            </p>
+                            <ul class="space-y-2 text-gray-medium">
+                                <li class="flex items-start">
+                                    <i class="fa fa-lightbulb-o text-warning mt-1 mr-2"></i>
+                                    <span>收集更多样本数据，特别是高风险类别的样本</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-lightbulb-o text-warning mt-1 mr-2"></i>
+                                    <span>尝试其他算法，如XGBoost、LightGBM等</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-lightbulb-o text-warning mt-1 mr-2"></i>
+                                    <span>进行更深入的特征工程，创建更多有意义的特征</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-lightbulb-o text-warning mt-1 mr-2"></i>
+                                    <span>调整模型超参数，通过网格搜索或贝叶斯优化寻找最优参数组合</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">信用风险分析与预测系统</h3>
+                    <p class="text-gray-400 text-sm">
+                        本系统基于机器学习算法，帮助金融机构评估客户信用风险，提高贷款决策的准确性和效率。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果有评估结果数据，更新页面
+            if (evaluation_results) {
+                // 更新模型概述部分
+                document.getElementById('training-samples').textContent = '150,000'; // 示例数据
+                document.getElementById('training-time').textContent = `${evaluation_results.training_time.toFixed(2)}秒`;
+                
+                // 更新模型性能部分
+                document.getElementById('accuracy').textContent = `${(evaluation_results.accuracy * 100).toFixed(2)}%`;
+                
+                // 解析分类报告获取精确率、召回率和F1分数
+                const reportLines = evaluation_results.report.split('\n');
+                const positiveClassLine = reportLines[2].trim().split(/\s+/);
+                document.getElementById('precision').textContent = `${(parseFloat(positiveClassLine[1]) * 100).toFixed(2)}%`;
+                document.getElementById('recall').textContent = `${(parseFloat(positiveClassLine[2]) * 100).toFixed(2)}%`;
+                document.getElementById('f1-score').textContent = `${(parseFloat(positiveClassLine[3]) * 100).toFixed(2)}%`;
+                
+                // 更新分类报告文本
+                document.getElementById('classification-report').textContent = evaluation_results.report;
+                
+                // 创建特征重要性图表
+                if (evaluation_results.feature_importance && evaluation_results.feature_importance.length > 0) {
+                    // 准备图表数据
+                    const features = evaluation_results.feature_importance.map(f => {
+                        // 映射特征名称为中文
+                        const featureNames = {
+                            'RevolvingUtilizationOfUnsecuredLines': '无担保信用额度使用率',
+                            'age': '年龄',
+                            'NumberOfTime30-59DaysPastDueNotWorse': '30-59天逾期次数',
+                            'DebtRatio': '负债比率',
+                            'MonthlyIncome': '月收入',
+                            'NumberOfOpenCreditLinesAndLoans': '开放式信贷和贷款数量',
+                            'NumberOfTimes90DaysLate': '90天逾期次数',
+                            'NumberRealEstateLoansOrLines': '房地产贷款或额度数量',
+                            'NumberOfTime60-89DaysPastDueNotWorse': '60-89天逾期次数',
+                            'NumberOfDependents': '家属数量'
+                        };
+                        return featureNames[f.Feature] || f.Feature;
+                    });
+                    
+                    const importance = evaluation_results.feature_importance.map(f => f.Importance);
+                    
+                    // 创建图表
+                    const ctx = document.getElementById('feature-importance-chart').getContext('2d');
+                    const chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: features,
+                            datasets: [{
+                                label: '特征重要性',
+                                data: importance,
+                                backgroundColor: 'rgba(22, 93, 255, 0.7)',
+                                borderColor: 'rgba(22, 93, 255, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: '重要性分数'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>    

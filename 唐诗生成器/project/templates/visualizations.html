@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信用风险分析可视化</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#6366F1',
+                        light: '#F3F4F6',
+                        dark: '#1F2937',
+                        softPrimary: '#60a5fa',
+                        softGray: '#e5e7eb',
+                        accent: '#FF6B6B'
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        card: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        cardHover: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .card-shadow {
+                box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+            }
+
+            .hover-scale {
+                transition: transform 0.3s ease;
+            }
+
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+
+            .transition-all-smooth {
+                transition: all 0.3s ease;
+            }
+
+            .fade-in {
+                opacity: 0;
+                animation: fadeIn 0.5s ease-in-out forwards;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-softGray min-h-screen flex flex-col font-sans">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md fixed w-full z-10 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-shield text-primary text-2xl"></i>
+                <span class="text-xl font-bold text-dark">信用风险评估系统</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/" class="text-gray-700 hover:text-softPrimary transition-colors transition-all-smooth">首页</a>
+                <a href="/dashboard" class="text-gray-700 hover:text-softPrimary transition-colors transition-all-smooth">数据分析</a>
+                <a href="/visualizations" class="text-primary font-medium transition-colors transition-all-smooth">可视化</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-gray-700 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden bg-white py-4 px-6 md:hidden">
+            <a href="/" class="block py-2 text-gray-700 hover:text-softPrimary transition-colors transition-all-smooth">首页</a>
+            <a href="/dashboard" class="block py-2 text-gray-700 hover:text-softPrimary transition-colors transition-all-smooth">数据分析</a>
+            <a href="/visualizations" class="block py-2 text-primary font-medium transition-colors transition-all-smooth">可视化</a>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow pt-24 pb-12">
+        <div class="container mx-auto px-6">
+            <!-- 标题部分 -->
+            <section class="mb-16 fade-in">
+                <h1 class="text-[clamp(2.5rem,5vw,3.5rem)] font-bold text-dark mb-6">信用风险分析可视化</h1>
+                <p class="text-gray-600 max-w-3xl text-xl">
+                    通过数据可视化深入了解信用风险评估模型的关键指标和特征重要性。
+                </p>
+            </section>
+
+            <!-- 图表部分 -->
+            <div class="grid grid-cols-1 gap-10 mb-10">
+                <!-- 违约情况分布饼图和特征相关性矩阵图 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <!-- 违约情况分布饼图 -->
+                    <div
+                        class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                        <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                            <i class="fa fa-pie-chart text-primary mr-3"></i>违约情况分布
+                        </h2>
+                        <div class="h-96">
+                            <iframe src="{{ chart1 }}" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <p class="text-gray-600 mt-6 text-lg">
+                            该图表展示出在未来两年内不违约率远远高于违约率
+                        </p>
+                    </div>
+
+                    <!-- 特征相关性矩阵图 -->
+                    <div
+                        class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                        <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                            <i class="fa fa-bar-chart text-primary mr-3"></i>特征相关性分析
+                        </h2>
+                        <div class="h-96">
+                            <iframe src="{{ correlation_matrix }}" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <p class="text-gray-600 mt-6 text-lg">
+                            该图表展示了各特征之间的相关性，颜色越深表示相关性越弱
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 年龄与逾期关系图 - 单独一行 -->
+                <div
+                    class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                    <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                        <i class="fa fa-line-chart text-primary mr-3"></i>年龄与逾期关系
+                    </h2>
+                    <div class="h-96">
+                        <iframe src="{{ chart2 }}" class="w-full h-full border-0"></iframe>
+                    </div>
+                    <p class="text-gray-600 mt-6 text-lg">
+                        该图表展示了年龄分布大多数在三十岁到八十岁区间，逾期30 - 59天的逾期笔数最多，逾期大于90天的逾期笔数次之，逾期60 - 89天的逾期笔数最少
+                    </p>
+                </div>
+
+                <!-- 逾期情况与年龄关系箱线图和负债率与违约状态小提琴图 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <!-- 逾期情况与年龄关系箱线图 -->
+                    <div
+                        class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                        <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                            <i class="fa fa-area-chart text-primary mr-3"></i>逾期情况与年龄关系
+                        </h2>
+                        <div class="h-96">
+                            <iframe src="{{ age_delinquency_boxplot }}" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <p class="text-gray-600 mt-6 text-lg">
+                            该图表展示了未逾期人群年龄中位数、四分位区间低于逾期人群，年龄相对较大群体未逾期概率更高，且两类人群都有年轻与高龄异常值
+                        </p>
+                    </div>
+
+                    <!-- 负债率与违约状态小提琴图 -->
+                    <div
+                        class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                        <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                            <i class="fa fa-area-chart text-primary mr-3"></i>负债率与违约状态
+                        </h2>
+                        <div class="h-96">
+                            <iframe src="{{ debt_ratio_violin }}" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <p class="text-gray-600 mt-6 text-lg">
+                            该图表展示了不违约群体负债率集中在低区间，分布相对紧凑；违约群体负债率不仅整体水平稍高，且分布更分散、高负债率极端值多
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 月收入区间与平均违约率趋势 - 单独一行 -->
+                <div
+                    class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                    <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                        <i class="fa fa-line-chart text-primary mr-3"></i>月收入区间与平均违约率趋势
+                    </h2>
+                    <div class="h-96">
+                        <iframe src="{{ income_default_trend }}" class="w-full h-full border-0"></iframe>
+                    </div>
+                    <p class="text-gray-600 mt-6 text-lg">
+                        该图表展示了月收入越高平均违约率越低，收入与违约风险呈负相关关系
+                    </p>
+                </div>
+
+                <div class="flex gap-10 mb-10">
+                    <div
+                        class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                        <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                            <i class="fa fa-scatter-chart text-primary mr-3"></i>月收入与逾期次数关系
+                        </h2>
+                        <div class="h-96">
+                            <iframe src="{{ income_overdue_scatter }}" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <p class="text-gray-600 mt-6 text-lg">
+                            该图表展示了月收入低与两万时，逾期的笔数相对较多；随月收入增加，逾期笔数整体呈下降趋势，表明月收入低的群体逾期风险相对更高，收入越高逾期可能性往往越小。
+                        </p>
+                    </div>
+                    <div
+                        class="bg-white rounded-2xl card-shadow p-8 transition-all duration-300 hover:shadow-cardHover hover-scale transition-all-smooth fade-in">
+                        <h2 class="text-2xl font-bold text-dark mb-8 flex items-center">
+                            <i class="fa fa-bar-chart text-primary mr-3"></i>信贷量与违约率关系
+                        </h2>
+                        <div class="h-96">
+                            <iframe src="{{ credit_loan_default }}" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <p class="text-gray-600 mt-6 text-lg">
+                            该图表展示了大部分信贷数量区间违约概率相对平稳，但特定区间 50 附近违约概率显著升高，说明信贷量达一定程度时，违约风险会上升
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结论部分 -->
+            <div class="bg-white rounded-2xl card-shadow p-10 mb-10 fade-in">
+                <h2 class="text-2xl font-bold text-dark mb-6">关键发现与建议</h2>
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 rounded-full p-2 mt-1 mr-6">
+                            <i class="fa fa-info-circle text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-dark text-xl">还款逾期记录</h3>
+                            <p class="text-gray-600 text-lg">
+                                历史逾期次数是预测违约风险的最重要指标。建议加强对有多次逾期记录借款人的风险评估。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-green-100 rounded-full p-2 mt-1 mr-6">
+                            <i class="fa fa-lightbulb-o text-secondary"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-dark text-xl">高风险群体</h3>
+                            <p class="text-gray-600 text-lg">
+                                年龄在20 - 30岁之间、负债率超过60%、月收入低于4000元的借款人群体违约风险较高，建议采取更谨慎的贷款策略。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-purple-100 rounded-full p-2 mt-1 mr-6">
+                            <i class="fa fa-cog text-info"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-dark text-xl">风险控制建议</h3>
+                            <p class="text-gray-600 text-lg">
+                                可以考虑根据借款人的特征重要性权重，建立更全面的风险评估模型，综合考虑多个因素以提高预测准确性。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 返回首页按钮 - 添加flex容器使其居中 -->
+            <div class="flex justify-center">
+                <a href="/"
+                    class="inline-flex items-center px-6 py-4 bg-primary text-white rounded-2xl hover:bg-softPrimary transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 duration-300 fade-in">
+                    <i class="fa fa-arrow-left mr-3"></i> 返回首页
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">信用风险评估系统</h3>
+                    <p class="text-gray-400 text-lg">
+                        我们的系统使用先进的机器学习技术，帮助金融机构做出更明智的贷款决策，降低违约风险。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 10) {
+                navbar.classList.add('py-2');
+                navbar.classList.add('bg-white/95');
+                navbar.classList.add('backdrop-blur-sm');
+            } else {
+                navbar.classList.remove('py-2');
+                navbar.classList.remove('bg-white/95');
+                navbar.classList.remove('backdrop-blur-sm');
+            }
+        });
+
+        // 移动端菜单切换
+        document.getElementById('menu-toggle').addEventListener('click', function () {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+
+</html>

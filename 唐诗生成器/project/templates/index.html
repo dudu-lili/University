@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信用风险分析与预测系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        danger: '#F53F3F',
+                        warning: '#FF7D00',
+                        success: '#00B42A',
+                        dark: '#1D2129',
+                        'gray-light': '#F2F3F5',
+                        'gray-medium': '#86909C'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
+            }
+            .form-input-focus {
+                @apply focus:ring-2 focus:ring-primary/30 focus:border-primary;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-light text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex-shrink-0 flex items-center">
+                        <i class="fa fa-line-chart text-primary text-2xl mr-2"></i>
+                        <span class="text-xl font-semibold">信用风险分析与预测系统</span>
+                    </a>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/" class="border-primary text-dark border-b-2 px-1 pt-1 inline-flex items-center text-sm font-medium">
+                            <i class="fa fa-home mr-1"></i> 首页
+                        </a>
+                        <a href="/model" class="border-transparent text-gray-medium hover:text-dark hover:border-gray-300 px-1 pt-1 inline-flex items-center text-sm font-medium">
+                            <i class="fa fa-cogs mr-1"></i> 模型信息
+                        </a>
+                        <a href="/visualizations" class="border-transparent text-gray-medium hover:text-dark hover:border-gray-300 px-1 pt-1 inline-flex items-center text-sm font-medium">
+                            <i class="fa fa-bar-chart mr-1"></i> 数据可视化
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-2">信用风险预测</h1>
+                <p class="text-gray-medium">输入客户信息，预测其未来两年内发生严重逾期的可能性</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 左侧表单 -->
+                <div class="lg:col-span-2 bg-white rounded-xl p-6 card-shadow">
+                    <h2 class="text-xl font-semibold mb-4">客户信息</h2>
+
+                    <form id="prediction-form" class="space-y-4">
+                        <!-- 修改所有输入框的默认值交互效果 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 无担保信用额度使用率 -->
+                            <div>
+                                <label for="RevolvingUtilizationOfUnsecuredLines" class="block text-sm font-medium text-gray-700 mb-1">
+                                    无担保信用额度使用率
+                                </label>
+                                <input type="number" step="0.01" id="RevolvingUtilizationOfUnsecuredLines" name="RevolvingUtilizationOfUnsecuredLines"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="0.5" onfocus="if(this.value === '0.5') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '0.5'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 年龄 -->
+                            <div>
+                                <label for="age" class="block text-sm font-medium text-gray-700 mb-1">
+                                    年龄
+                                </label>
+                                <input type="number" id="age" name="age"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="35" onfocus="if(this.value === '35') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '35'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 30-59天逾期次数 -->
+                            <div>
+                                <label for="NumberOfTime30-59DaysPastDueNotWorse" class="block text-sm font-medium text-gray-700 mb-1">
+                                    30-59天逾期次数
+                                </label>
+                                <input type="number" id="NumberOfTime30-59DaysPastDueNotWorse" name="NumberOfTime30-59DaysPastDueNotWorse"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="0" onfocus="if(this.value === '0') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '0'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 负债比率 -->
+                            <div>
+                                <label for="DebtRatio" class="block text-sm font-medium text-gray-700 mb-1">
+                                    负债比率
+                                </label>
+                                <input type="number" step="0.01" id="DebtRatio" name="DebtRatio"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="0.3" onfocus="if(this.value === '0.3') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '0.3'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 月收入 -->
+                            <div>
+                                <label for="MonthlyIncome" class="block text-sm font-medium text-gray-700 mb-1">
+                                    月收入
+                                </label>
+                                <input type="number" step="0.01" id="MonthlyIncome" name="MonthlyIncome"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="5000" onfocus="if(this.value === '5000') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '5000'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 开放式信贷和贷款数量 -->
+                            <div>
+                                <label for="NumberOfOpenCreditLinesAndLoans" class="block text-sm font-medium text-gray-700 mb-1">
+                                    开放式信贷和贷款数量
+                                </label>
+                                <input type="number" id="NumberOfOpenCreditLinesAndLoans" name="NumberOfOpenCreditLinesAndLoans"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="5" onfocus="if(this.value === '5') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '5'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 90天逾期次数 -->
+                            <div>
+                                <label for="NumberOfTimes90DaysLate" class="block text-sm font-medium text-gray-700 mb-1">
+                                    90天逾期次数
+                                </label>
+                                <input type="number" id="NumberOfTimes90DaysLate" name="NumberOfTimes90DaysLate"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="0" onfocus="if(this.value === '0') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '0'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 房地产贷款或额度数量 -->
+                            <div>
+                                <label for="NumberRealEstateLoansOrLines" class="block text-sm font-medium text-gray-700 mb-1">
+                                    房地产贷款或额度数量
+                                </label>
+                                <input type="number" id="NumberRealEstateLoansOrLines" name="NumberRealEstateLoansOrLines"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="1" onfocus="if(this.value === '1') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '1'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 60-89天逾期次数 -->
+                            <div>
+                                <label for="NumberOfTime60-89DaysPastDueNotWorse" class="block text-sm font-medium text-gray-700 mb-1">
+                                    60-89天逾期次数
+                                </label>
+                                <input type="number" id="NumberOfTime60-89DaysPastDueNotWorse" name="NumberOfTime60-89DaysPastDueNotWorse"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="0" onfocus="if(this.value === '0') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '0'; this.classList.add('text-gray-500')}">
+                            </div>
+                            
+                            <!-- 家属数量 -->
+                            <div>
+                                <label for="NumberOfDependents" class="block text-sm font-medium text-gray-700 mb-1">
+                                    家属数量
+                                </label>
+                                <input type="number" id="NumberOfDependents" name="NumberOfDependents"
+                                    class="w-full rounded-md border-gray-300 shadow-sm form-input-focus border px-3 py-2 text-sm text-gray-500" required
+                                    value="1" onfocus="if(this.value === '1') this.value = ''; this.classList.remove('text-gray-500')" 
+                                    onblur="if(this.value === '') {this.value = '1'; this.classList.add('text-gray-500')}">
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out flex items-center justify-center btn-hover">
+                                <i class="fa fa-calculator mr-2"></i> 预测信用风险
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 右侧结果 -->
+                <div class="lg:col-span-1">
+                    <div id="result-card" class="bg-white rounded-xl p-6 card-shadow hidden">
+                        <h2 class="text-xl font-semibold mb-4">预测结果</h2>
+
+                        <div id="loading-indicator" class="hidden flex justify-center py-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                        </div>
+
+                        <div id="result-content" class="hidden">
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-700">风险等级</span>
+                                    <span id="risk-level" class="text-lg font-semibold"></span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="risk-progress" class="bg-danger h-2.5 rounded-full transition-all duration-1000"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-700">违约概率</span>
+                                    <span id="risk-probability" class="text-lg font-semibold"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h3 class="text-sm font-medium text-gray-700 mb-2">风险因素分析</h3>
+                                <ul id="risk-factors" class="space-y-2 text-sm"></ul>
+                            </div>
+
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <div class="text-xs text-gray-medium">
+                                    <p>预测时间: <span id="prediction-time"></span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mt-4">
+                            <p id="error-text"></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 card-shadow mt-6">
+                        <h2 class="text-xl font-semibold mb-4">模型说明</h2>
+                        <p class="text-gray-medium text-sm">
+                            本系统使用随机森林算法预测客户未来两年内发生严重逾期的可能性。模型基于多个信用相关特征进行训练，具有较高的预测准确率。
+                        </p>
+                        <div class="mt-4">
+                            <div class="flex items-center">
+                                <div class="w-1/3 text-right">
+                                    <span id="sidebar-accuracy" class="font-semibold"></span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                <div id="accuracy-bar" class="bg-primary h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">信用风险分析与预测系统</h3>
+                    <p class="text-gray-400 text-sm">
+                        本系统基于机器学习算法，帮助金融机构评估客户信用风险，提高贷款决策的准确性和效率。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 表单提交事件
+            const form = document.getElementById('prediction-form');
+            const resultCard = document.getElementById('result-card');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const resultContent = document.getElementById('result-content');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+
+            // 初始化结果卡片为隐藏状态
+            resultCard.classList.remove('hidden');
+            loadingIndicator.classList.add('hidden');
+            resultContent.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+
+            // 获取评估结果数据
+            const evaluation_results = window.evaluation_results || {};
+
+            // 如果有模型准确率数据，更新侧边栏
+            if (evaluation_results && evaluation_results.accuracy) {
+                const accuracy = (evaluation_results.accuracy * 100).toFixed(2);
+                document.getElementById('sidebar-accuracy').textContent = `${accuracy}%`;
+                document.getElementById('accuracy-bar').style.width = `${accuracy}%`;
+                document.getElementById('model-accuracy').textContent = `${accuracy}%`;
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // 显示加载状态
+                loadingIndicator.classList.remove('hidden');
+                resultContent.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+
+                // 收集表单数据
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // 发送预测请求
+                fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('服务器响应错误');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    // 隐藏加载状态，显示结果
+                    loadingIndicator.classList.add('hidden');
+                    resultContent.classList.remove('hidden');
+
+                    // 更新结果显示
+                    updateResult(result, data);
+                })
+                .catch(error => {
+                    // 隐藏加载状态，显示错误
+                    loadingIndicator.classList.add('hidden');
+                    errorMessage.classList.remove('hidden');
+                    errorText.textContent = error.message;
+                    console.error('预测错误:', error);
+                });
+            });
+
+            // 更新预测结果显示
+            function updateResult(result, data) {
+                const riskLevel = document.getElementById('risk-level');
+                const riskProbability = document.getElementById('risk-probability');
+                const riskProgress = document.getElementById('risk-progress');
+                const predictionTime = document.getElementById('prediction-time');
+                const riskFactors = document.getElementById('risk-factors');
+
+                // 设置风险等级和颜色
+                const probability = result.probability;
+                riskProbability.textContent = `${(probability * 100).toFixed(2)}%`;
+                riskProgress.style.width = `${probability * 100}%`;
+
+                if (probability < 0.3) {
+                    riskLevel.textContent = '低风险';
+                    riskLevel.className = 'text-lg font-semibold text-success';
+                    riskProgress.className = 'bg-success h-2.5 rounded-full transition-all duration-1000';
+                } else if (probability < 0.7) {
+                    riskLevel.textContent = '中风险';
+                    riskLevel.className = 'text-lg font-semibold text-warning';
+                    riskProgress.className = 'bg-warning h-2.5 rounded-full transition-all duration-1000';
+                } else {
+                    riskLevel.textContent = '高风险';
+                    riskLevel.className = 'text-lg font-semibold text-danger';
+                    riskProgress.className = 'bg-danger h-2.5 rounded-full transition-all duration-1000';
+                }
+
+                // 设置预测时间
+                predictionTime.textContent = result.timestamp;
+
+                // 生成风险因素分析（模拟）
+                riskFactors.innerHTML = '';
+                if (evaluation_results && evaluation_results.feature_importance) {
+                    // 获取前3个最重要的特征
+                    const topFeatures = evaluation_results.feature_importance.slice(0, 3);
+
+                    topFeatures.forEach(feature => {
+                        const featureName = feature.Feature;
+                        const importance = (feature.Importance * 100).toFixed(1);
+
+                        // 创建列表项
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center';
+
+                        // 获取用户输入的该特征值
+                        const featureValue = data[featureName] || 'N/A';
+
+                        // 设置特征名称和重要性
+                        li.innerHTML = `
+                            <span>${getFeatureLabel(featureName)}</span>
+                            <span class="font-medium">${importance}%</span>
+                        `;
+
+                        riskFactors.appendChild(li);
+                    });
+                }
+            }
+
+            // 获取特征的中文标签
+            function getFeatureLabel(featureName) {
+                const labels = {
+                    'RevolvingUtilizationOfUnsecuredLines': '无担保信用额度使用率',
+                    'age': '年龄',
+                    'NumberOfTime30-59DaysPastDueNotWorse': '30-59天逾期次数',
+                    'DebtRatio': '负债比率',
+                    'MonthlyIncome': '月收入',
+                    'NumberOfOpenCreditLinesAndLoans': '开放式信贷和贷款数量',
+                    'NumberOfTimes90DaysLate': '90天逾期次数',
+                    'NumberRealEstateLoansOrLines': '房地产贷款或额度数量',
+                    'NumberOfTime60-89DaysPastDueNotWorse': '60-89天逾期次数',
+                    'NumberOfDependents': '家属数量'
+                };
+
+                return labels[featureName] || featureName;
+            }
+        });
+    </script>
+</body>
+</html>
